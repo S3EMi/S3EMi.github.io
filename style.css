@@ -1,0 +1,184 @@
+
+body {
+  
+    background-image: url('https://ampedstudio.com/wp-content/uploads/2023/06/sound-design-in-film.jpg');
+    background-size: cover;  /* faz a imagem cobrir uma area sem distorcao*/        
+    background-position: center center; 
+    background-repeat: no-repeat;    
+    background-attachment: fixed;   
+
+   
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    color: #f0f0f0; 
+    margin: 0;
+    line-height: 1.6; 
+
+#s1 {
+  
+   
+    background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaPia8o2x3B0fojr6tSFljNfkxy3TMi7WVSw&s'); 
+    background-size: cover;         
+    background-position: center;     
+    background-repeat: no-repeat;    
+    
+    height: 100vh;                  
+    display: flex;                  
+    flex-direction: column;          
+    justify-content: center;        
+    align-items: center;            
+    text-align: center;            
+    
+    
+    color: white;                    
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); 
+    padding: 20px;                 
+
+}
+
+#s2 {
+    min-height: 100vh; /*importante faz a pagina nao ter limite de tamanho*/
+
+    background: rgba(26, 30, 43, 0.65); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    
+    
+    max-width: 900px;
+    margin: 40px auto; 
+    padding: 40px;
+    border-radius: 15px; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3); 
+  
+}
+
+#s3 {
+    height: 100vh;
+   position: relative; /* Essencial para posicionar os elementos filhos */
+    overflow: hidden; /* Garante que os brilhos não vazem para fora da seção */
+    background-color: #0f0524; /* Um roxo bem escuro, quase preto */
+    padding: 80px 40px;
+    margin: 60px auto;
+    max-width: 1200px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 0, 127, 0.3);
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column; /* <-- Esta linha ordena os itens um embaixo do outro */
+    align-items: center;   /* <-- Esta linha centraliza todos eles na horizontal */
+    padding: 50px 0;       /* Apenas para dar um respiro na seção */
+}
+
+#menu-horizontal {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+#menu-horizontal ul {
+    list-style: none;
+    /*tira os marcadores*/
+    padding: 0;
+    background-color: black;
+    text-align: right;
+    /*alinhar os elementos na direita*/
+}
+
+#menu-horizontal ul li {
+    display: inline-block;
+    /*ficar em uma linha (e nao colunas)*/
+}
+
+#menu-horizontal ul li a {
+    font-family: "Lucida Sans", "Lucida Sans Regular", "LucidaGrande"," Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+ color: antiquewhite;
+    text-decoration: none;
+    /*tira o sublinhado*/
+    padding: 15px;
+    display: inline-block;
+    /*cria um bloco com o padding informado*/
+    transition: background 1s ;
+    /*efeito de fade combinado com o hover*/
+}
+
+#menu-horizontal ul li a:hover {
+    background-color: green;
+    opacity: 0.5;
+    /*opcional */
+}
+
+#botao1{
+display: flex;
+    justify-content: center; /* Centraliza os botões */
+    flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
+    gap: 25px; /* Espaço entre os botões */
+    margin-top: 30px;
+
+     /* Layout e Alinhamento */
+    display: inline-flex;
+    align-items: center;
+    gap: 10px; /* Espaço entre o ícone e o texto */
+    
+    /* Cores e Fundo */
+    background: linear-gradient(90deg, #ff007f 0%, #4c00ff 100%); /* Gradiente vibrante */
+    color: white;
+    
+    /* Tipografia */
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase; /* Deixa o texto em maiúsculas */
+    letter-spacing: 1px; /* Espaçamento entre as letras */
+    font-size: 14px;
+
+    /* Tamanho e Forma */
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px; /* Bordas bem arredondadas para um visual moderno */
+    
+    /* Efeitos de Profundidade e Animação */
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out; /* Transição suave para todos os efeitos */
+
+     transform: translateY(-5px); /* Efeito de "levantar" o botão */
+    box-shadow: 0px 10px 25px rgba(255, 0, 127, 0.5); /* Sombra colorida e mais forte */ 
+
+}
+
+#botao2{
+    display: flex;
+    justify-content: center; /* Centraliza os botões */
+    flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
+    gap: 25px; /* Espaço entre os botões */
+    margin-top: 30px;
+
+     /* Layout e Alinhamento */
+    display: inline-flex;
+    align-items: center;
+    gap: 10px; /* Espaço entre o ícone e o texto */
+    
+    /* Cores e Fundo */
+    background: linear-gradient(90deg, #ff007f 0%, #4c00ff 100%); /* Gradiente vibrante */
+    color: white;
+    
+    /* Tipografia */
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase; /* Deixa o texto em maiúsculas */
+    letter-spacing: 1px; /* Espaçamento entre as letras */
+    font-size: 14px;
+
+    /* Tamanho e Forma */
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px; /* Bordas bem arredondadas para um visual moderno */
+    
+    /* Efeitos de Profundidade e Animação */
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out; /* Transição suave para todos os efeitos */
+
+     transform: translateY(-5px); /* Efeito de "levantar" o botão */
+    box-shadow: 0px 10px 25px rgba(255, 0, 127, 0.5); /* Sombra colorida e mais forte */ 
+    }
+}
