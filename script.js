@@ -67,6 +67,7 @@ function criarContadorFones() {
     setInterval(atualizarContadores, 30000); // Atualiza a cada 30 segundos
 }
 
+// 3. SISTEMA DE AVALIAÇÃO POR ESTRELAS
 function criarSistemaAvaliacao() {
     const fones = [
         { id: 'zeroRed', nome: 'ZERO:RED' },
@@ -313,34 +314,98 @@ function criarSistemaFeedback() {
             textarea.value = '';
             document.getElementById('form-feedback').style.display = 'none';
 
-            // Aqui você pode adicionar código para enviar para um servidor
+            // Adicionar codigo futuramente para um servidor
             console.log('Feedback recebido:', feedback);
         }
     });
 }
 
-// INICIALIZAR TODAS AS FUNCIONALIDADES
-document.addEventListener('DOMContentLoaded', function() {
-    // Aguardar um pouco para a animação de digitação ter mais impacto
-    setTimeout(animarDigitacao, 500);
+function criarSistemaPesquisa() {
+    const searchHTML = `
+        <div id="barra-pesquisa">
+            <input type="text" id="input-pesquisa" placeholder="Pesquisar fones...">
+            <button id="btn-pesquisa">🔍</button>
+            <button id="btn-limpar">Limpar</button>
+        </div>
+    `;
 
+    // Inserir no início da seção principal
+    const section2 = document.getElementById('s2');
+    if (section2) {
+        section2.insertAdjacentHTML('afterbegin', searchHTML);
+    }
+
+    // Elementos que serão pesquisados
+    const elementosPesquisaveis = [
+        '#s2 h2', '#s2 h3', '#s2 p', '.contador-fone', '.avaliacao p'
+    ];
+
+    document.getElementById('btn-pesquisa').addEventListener('click', executarPesquisa);
+    document.getElementById('input-pesquisa').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') executarPesquisa();
+    });
+    
+    document.getElementById('btn-limpar').addEventListener('click', limparPesquisa);
+
+    function executarPesquisa() {
+        const termo = document.getElementById('input-pesquisa').value.toLowerCase().trim();
+        
+        if (termo === '') {
+            limparPesquisa();
+            return;
+        }
+
+        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
+            Array.from(document.querySelectorAll(seletor))
+        );
+
+        let resultadosEncontrados = false;
+
+        todosElementos.forEach(elemento => {
+            const texto = elemento.textContent.toLowerCase();
+            if (texto.includes(termo)) {
+                elemento.style.backgroundColor = '#ff007f33';
+                elemento.style.padding = '2px 5px';
+                elemento.style.borderRadius = '3px';
+                elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultadosEncontrados = true;
+            } else {
+                elemento.style.backgroundColor = '';
+            }
+        });
+
+        if (!resultadosEncontrados) {
+            alert('Nenhum resultado encontrado para: ' + termo);
+        }
+    }
+
+    function limparPesquisa() {
+        document.getElementById('input-pesquisa').value = '';
+        
+        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
+            Array.from(document.querySelectorAll(seletor))
+        );
+        
+        todosElementos.forEach(elemento => {
+            elemento.style.backgroundColor = '';
+            elemento.style.padding = '';
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(animarDigitacao, 500);
     criarContadorFones();
     criarSistemaAvaliacao();
+    criarSistemaPesquisa(); // Adicione esta linha
     criarModalCurvas();
     menuScroll();
     criarParticulas();
     criarSistemaFeedback();
-
     console.log('🎵 Site de fones de ouvido carregado com sucesso!');
 });
 
-// 8. EFEITOS DE SOM INTERATIVOS (OPCIONAL)
-function criarEfeitosSonoros() {
-    // Este é um esqueleto para futura implementação com Web Audio API
-    console.log('Sistema de áudio pronto para implementação');
-}
-
-// Adicione este CSS complementar no seu style.css
+// Código em CSS
 const cssComplementar = `
 .contador-fone {
     display: inline-block;
@@ -484,12 +549,58 @@ const cssComplementar = `
     cursor: pointer;
     width: 100%;
 }
+    #barra-pesquisa {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+#input-pesquisa {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 16px;
+    border: 1px solid #ff007f;
+}
+
+#input-pesquisa::placeholder {
+    color: #ccc;
+}
+
+#btn-pesquisa, #btn-limpar {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#btn-pesquisa {
+    background: linear-gradient(45deg, #ff007f, #4c00ff);
+    color: white;
+}
+
+#btn-limpar {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#btn-pesquisa:hover, #btn-limpar:hover {
+    transform: scale(1.05);
+}
 `;
 
 // Adicionar CSS complementar automaticamente
 const styleSheet = document.createElement('style');
 styleSheet.textContent = cssComplementar;
 document.head.appendChild(styleSheet);
-
 
 document.head.appendChild(styleSheet);
