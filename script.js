@@ -67,31 +67,36 @@ function criarContadorFones() {
     setInterval(atualizarContadores, 30000); // Atualiza a cada 30 segundos
 }
 
-// 3. SISTEMA DE AVALIAÇÃO POR ESTRELAS
 function criarSistemaAvaliacao() {
-    const fones = ['zeroRed', 'zeroBlue'];
+    const fones = [
+        { id: 'zeroRed', nome: 'ZERO:RED' },
+        { id: 'zeroBlue', nome: 'ZERO (Blue)' }
+    ];
 
     fones.forEach(fone => {
         const container = document.createElement('div');
         container.className = 'avaliacao';
         container.innerHTML = `
-            <p>Avalie o ${fone === 'zeroRed' ? 'ZERO:RED' : 'ZERO (Blue)'}:</p>
+            <p>Avalie o ${fone.nome}:</p>
             <div class="estrelas">
                 ${Array.from({length: 5}, (_, i) => 
-                    `<span class="estrela" data-fone="${fone}" data-valor="${i + 1}">★</span>`
+                    `<span class="estrela" data-fone="${fone.id}" data-valor="${i + 1}">★</span>`
                 ).join('')}
             </div>
-            <div class="media-avaliacao"></div>
+            <div class="media-avaliacao" id="media-${fone.id}"></div>
         `;
 
         // Inserir após a descrição de cada fone
-        const descricao = fone === 'zeroRed' ? 
+        const descricao = fone.id === 'zeroRed' ? 
             document.querySelector('#s2 p:nth-child(4)') : 
             document.querySelector('#s2 p:nth-child(9)');
 
         if (descricao) {
             descricao.parentNode.insertBefore(container, descricao.nextSibling);
         }
+
+        // Carregar avaliações existentes ao inicializar
+        carregarAvaliacoes(fone.id);
     });
 
     // Event listeners para as estrelas
@@ -104,9 +109,29 @@ function criarSistemaAvaliacao() {
     });
 }
 
+function carregarAvaliacoes(foneId) {
+    const avaliacoes = JSON.parse(localStorage.getItem(`avaliacoes_${foneId}`)) || [];
+    const mediaElement = document.getElementById(`media-${foneId}`);
+    
+    if (avaliacoes.length > 0) {
+        const media = (avaliacoes.reduce((a, b) => a + b, 0) / avaliacoes.length).toFixed(1);
+        mediaElement.textContent = `Média: ${media} (${avaliacoes.length} avaliações)`;
+        
+        // Atualizar visual das estrelas com a média
+        const estrelas = mediaElement.previousElementSibling.querySelectorAll('.estrela');
+        estrelas.forEach((estrela, index) => {
+            if (index < Math.round(media)) {
+                estrela.classList.add('ativa');
+            }
+        });
+    } else {
+        mediaElement.textContent = 'Seja o primeiro a avaliar!';
+    }
+}
+
 function avaliarFone(fone, valor, estrelaClicada) {
     const estrelas = estrelaClicada.parentElement.querySelectorAll('.estrela');
-    const mediaElement = estrelaClicada.parentElement.nextElementSibling;
+    const mediaElement = document.getElementById(`media-${fone}`);
 
     // Atualizar visual das estrelas
     estrelas.forEach((estrela, index) => {
@@ -465,5 +490,6 @@ const cssComplementar = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = cssComplementar;
 document.head.appendChild(styleSheet);
+
 
 document.head.appendChild(styleSheet);
