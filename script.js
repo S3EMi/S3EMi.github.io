@@ -41,10 +41,10 @@ function criarContadorFones() {
     
     // Adicionar elementos de contador na página
     const adicionarElementosContador = () => {
-        const descricaoRed = document.querySelector('#s2 p:nth-child(3)'); // Ajuste conforme necessário
-        const descricaoBlue = document.querySelector('#s2 p:nth-child(8)'); // Ajuste conforme necessário
+        const descricaoRed = document.querySelector('#s2 p:nth-child(3)');
+        const descricaoBlue = document.querySelector('#s2 p:nth-child(8)');
         
-        if (descricaoRed) {
+        if (descricaoRed && !document.querySelector('#contador-red')) {
             const spanRed = document.createElement('span');
             spanRed.id = 'contador-red';
             spanRed.className = 'contador-fone';
@@ -53,7 +53,7 @@ function criarContadorFones() {
             descricaoRed.appendChild(spanRed);
         }
         
-        if (descricaoBlue) {
+        if (descricaoBlue && !document.querySelector('#contador-blue')) {
             const spanBlue = document.createElement('span');
             spanBlue.id = 'contador-blue';
             spanBlue.className = 'contador-fone';
@@ -64,10 +64,10 @@ function criarContadorFones() {
     };
     
     adicionarElementosContador();
-    setInterval(atualizarContadores, 30000); // Atualiza a cada 30 segundos
+    setInterval(atualizarContadores, 30000);
 }
 
-// 3. SISTEMA DE AVALIAÇÃO POR ESTRELAS
+// 3. SISTEMA DE AVALIAÇÃO POR ESTRELAS (CORRIGIDO)
 function criarSistemaAvaliacao() {
     const fones = [
         { id: 'zeroRed', nome: 'ZERO:RED' },
@@ -79,7 +79,7 @@ function criarSistemaAvaliacao() {
         container.className = 'avaliacao';
         container.innerHTML = `
             <p>Avalie o ${fone.nome}:</p>
-            <div class="estrelas">
+            <div class="estrelas" id="estrelas-${fone.id}">
                 ${Array.from({length: 5}, (_, i) => 
                     `<span class="estrela" data-fone="${fone.id}" data-valor="${i + 1}">★</span>`
                 ).join('')}
@@ -92,7 +92,7 @@ function criarSistemaAvaliacao() {
             document.querySelector('#s2 p:nth-child(4)') : 
             document.querySelector('#s2 p:nth-child(9)');
 
-        if (descricao) {
+        if (descricao && !descricao.nextElementSibling?.classList?.contains('avaliacao')) {
             descricao.parentNode.insertBefore(container, descricao.nextSibling);
         }
 
@@ -114,12 +114,14 @@ function carregarAvaliacoes(foneId) {
     const avaliacoes = JSON.parse(localStorage.getItem(`avaliacoes_${foneId}`)) || [];
     const mediaElement = document.getElementById(`media-${foneId}`);
     
+    if (!mediaElement) return;
+    
     if (avaliacoes.length > 0) {
         const media = (avaliacoes.reduce((a, b) => a + b, 0) / avaliacoes.length).toFixed(1);
         mediaElement.textContent = `Média: ${media} (${avaliacoes.length} avaliações)`;
         
         // Atualizar visual das estrelas com a média
-        const estrelas = mediaElement.previousElementSibling.querySelectorAll('.estrela');
+        const estrelas = document.querySelectorAll(`#estrelas-${foneId} .estrela`);
         estrelas.forEach((estrela, index) => {
             if (index < Math.round(media)) {
                 estrela.classList.add('ativa');
@@ -133,6 +135,8 @@ function carregarAvaliacoes(foneId) {
 function avaliarFone(fone, valor, estrelaClicada) {
     const estrelas = estrelaClicada.parentElement.querySelectorAll('.estrela');
     const mediaElement = document.getElementById(`media-${fone}`);
+
+    if (!mediaElement) return;
 
     // Atualizar visual das estrelas
     estrelas.forEach((estrela, index) => {
@@ -159,8 +163,112 @@ function avaliarFone(fone, valor, estrelaClicada) {
     }, 200);
 }
 
-// 4. MODAL PARA AS CURVAS SONORAS
+// 4. SISTEMA DE PESQUISA
+function criarSistemaPesquisa() {
+    const searchHTML = `
+        <div id="barra-pesquisa">
+            <input type="text" id="input-pesquisa" placeholder="Pesquisar fones, características, especificações...">
+            <button id="btn-pesquisa">🔍 Pesquisar</button>
+            <button id="btn-limpar">Limpar</button>
+        </div>
+    `;
+
+    // Inserir no início da seção principal
+    const section2 = document.getElementById('s2');
+    if (section2 && !document.getElementById('barra-pesquisa')) {
+        section2.insertAdjacentHTML('afterbegin', searchHTML);
+    }
+
+    // Elementos que serão pesquisados
+    const elementosPesquisaveis = [
+        '#s2 h2', '#s2 h3', '#s2 p', '.contador-fone', '.avaliacao p'
+    ];
+
+    const btnPesquisa = document.getElementById('btn-pesquisa');
+    const btnLimpar = document.getElementById('btn-limpar');
+    
+    if (btnPesquisa) {
+        btnPesquisa.addEventListener('click', executarPesquisa);
+    }
+    
+    const inputPesquisa = document.getElementById('input-pesquisa');
+    if (inputPesquisa) {
+        inputPesquisa.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') executarPesquisa();
+        });
+    }
+    
+    if (btnLimpar) {
+        btnLimpar.addEventListener('click', limparPesquisa);
+    }
+
+    function executarPesquisa() {
+        const input = document.getElementById('input-pesquisa');
+        if (!input) return;
+        
+        const termo = input.value.toLowerCase().trim();
+        
+        if (termo === '') {
+            limparPesquisa();
+            return;
+        }
+
+        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
+            Array.from(document.querySelectorAll(seletor))
+        );
+
+        let resultadosEncontrados = false;
+        let primeiroResultado = null;
+
+        todosElementos.forEach(elemento => {
+            const texto = elemento.textContent.toLowerCase();
+            if (texto.includes(termo)) {
+                elemento.style.backgroundColor = '#ff007f33';
+                elemento.style.padding = '2px 5px';
+                elemento.style.borderRadius = '3px';
+                
+                if (!primeiroResultado) {
+                    primeiroResultado = elemento;
+                }
+                
+                resultadosEncontrados = true;
+            } else {
+                elemento.style.backgroundColor = '';
+                elemento.style.padding = '';
+            }
+        });
+
+        if (primeiroResultado) {
+            primeiroResultado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (!resultadosEncontrados) {
+            alert('Nenhum resultado encontrado para: ' + termo);
+        }
+    }
+
+    function limparPesquisa() {
+        const input = document.getElementById('input-pesquisa');
+        if (input) {
+            input.value = '';
+        }
+        
+        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
+            Array.from(document.querySelectorAll(seletor))
+        );
+        
+        todosElementos.forEach(elemento => {
+            elemento.style.backgroundColor = '';
+            elemento.style.padding = '';
+        });
+    }
+}
+
+// 5. MODAL PARA AS CURVAS SONORAS
 function criarModalCurvas() {
+    // Verificar se o modal já existe
+    if (document.getElementById('modal-curvas')) return;
+
     const modalHTML = `
         <div id="modal-curvas" class="modal">
             <div class="modal-conteudo">
@@ -180,23 +288,31 @@ function criarModalCurvas() {
             e.preventDefault();
             const url = botao.href;
             const fone = botao.id.includes('red') ? 'ZERO:RED' : 'ZERO (Blue)';
-
             abrirModalCurva(fone, url);
         });
     });
 
     // Fechar modal
-    document.querySelector('.fechar-modal').addEventListener('click', fecharModal);
-    document.getElementById('modal-curvas').addEventListener('click', (e) => {
-        if (e.target.id === 'modal-curvas') {
-            fecharModal();
-        }
-    });
+    const fecharBtn = document.querySelector('.fechar-modal');
+    if (fecharBtn) {
+        fecharBtn.addEventListener('click', fecharModal);
+    }
+    
+    const modal = document.getElementById('modal-curvas');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'modal-curvas') {
+                fecharModal();
+            }
+        });
+    }
 }
 
 function abrirModalCurva(fone, url) {
     const modal = document.getElementById('modal-curvas');
     const descricao = document.getElementById('modal-descricao');
+
+    if (!modal || !descricao) return;
 
     document.getElementById('modal-imagem').innerHTML = `
         <div style="text-align: center; padding: 20px;">
@@ -218,12 +334,17 @@ function abrirModalCurva(fone, url) {
 }
 
 function fecharModal() {
-    document.getElementById('modal-curvas').style.display = 'none';
+    const modal = document.getElementById('modal-curvas');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
-// 5. DETECTOR DE SCROLL PARA MENU FIXO
+// 6. DETECTOR DE SCROLL PARA MENU FIXO
 function menuScroll() {
     const menu = document.getElementById('menu-horizontal');
+    if (!menu) return;
+    
     let ultimoScroll = 0;
     
     window.addEventListener('scroll', () => {
@@ -245,10 +366,13 @@ function menuScroll() {
     });
 }
 
-// 6. ANIMAÇÃO DE PARTICULAS MUSICAIS
+// 7. ANIMAÇÃO DE PARTICULAS MUSICAIS
 function criarParticulas() {
     const section3 = document.getElementById('s3');
     if (!section3) return;
+
+    // Verificar se as partículas já existem
+    if (section3.querySelector('.particula-musical')) return;
 
     const cores = ['#ff007f', '#4c00ff', '#00ff88', '#ffaa00'];
 
@@ -266,26 +390,18 @@ function criarParticulas() {
             left: ${Math.random() * 100}%;
             animation: flutuar ${Math.random() * 10 + 10}s infinite ease-in-out;
             animation-delay: ${Math.random() * 5}s;
+            pointer-events: none;
         `;
 
         section3.appendChild(particula);
     }
-
-    // Adicionar keyframes para animação
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes flutuar {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-20px) rotate(90deg); }
-            50% { transform: translateY(0) rotate(180deg); }
-            75% { transform: translateY(20px) rotate(270deg); }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
-// 7. SISTEMA DE FEEDBACK DO SITE
+// 8. SISTEMA DE FEEDBACK DO SITE
 function criarSistemaFeedback() {
+    // Verificar se o feedback já existe
+    if (document.getElementById('feedback-flutuante')) return;
+
     const feedbackHTML = `
         <div id="feedback-flutuante">
             <button id="btn-feedback">💬 Feedback</button>
@@ -299,114 +415,41 @@ function criarSistemaFeedback() {
 
     document.body.insertAdjacentHTML('beforeend', feedbackHTML);
 
-    document.getElementById('btn-feedback').addEventListener('click', () => {
-        const form = document.getElementById('form-feedback');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
-
-    document.getElementById('enviar-feedback').addEventListener('click', () => {
-        const textarea = document.querySelector('#form-feedback textarea');
-        const feedback = textarea.value.trim();
-
-        if (feedback) {
-            // Simular envio do feedback
-            alert('Obrigado pelo seu feedback! 🎧');
-            textarea.value = '';
-            document.getElementById('form-feedback').style.display = 'none';
-
-            // Adicionar codigo futuramente para um servidor
-            console.log('Feedback recebido:', feedback);
-        }
-    });
-}
-
-function criarSistemaPesquisa() {
-    const searchHTML = `
-        <div id="barra-pesquisa">
-            <input type="text" id="input-pesquisa" placeholder="Pesquisar fones...">
-            <button id="btn-pesquisa">🔍</button>
-            <button id="btn-limpar">Limpar</button>
-        </div>
-    `;
-
-    // Inserir no início da seção principal
-    const section2 = document.getElementById('s2');
-    if (section2) {
-        section2.insertAdjacentHTML('afterbegin', searchHTML);
-    }
-
-    // Elementos que serão pesquisados
-    const elementosPesquisaveis = [
-        '#s2 h2', '#s2 h3', '#s2 p', '.contador-fone', '.avaliacao p'
-    ];
-
-    document.getElementById('btn-pesquisa').addEventListener('click', executarPesquisa);
-    document.getElementById('input-pesquisa').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') executarPesquisa();
-    });
+    const btnFeedback = document.getElementById('btn-feedback');
+    const btnEnviar = document.getElementById('enviar-feedback');
     
-    document.getElementById('btn-limpar').addEventListener('click', limparPesquisa);
-
-    function executarPesquisa() {
-        const termo = document.getElementById('input-pesquisa').value.toLowerCase().trim();
-        
-        if (termo === '') {
-            limparPesquisa();
-            return;
-        }
-
-        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
-            Array.from(document.querySelectorAll(seletor))
-        );
-
-        let resultadosEncontrados = false;
-
-        todosElementos.forEach(elemento => {
-            const texto = elemento.textContent.toLowerCase();
-            if (texto.includes(termo)) {
-                elemento.style.backgroundColor = '#ff007f33';
-                elemento.style.padding = '2px 5px';
-                elemento.style.borderRadius = '3px';
-                elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                resultadosEncontrados = true;
-            } else {
-                elemento.style.backgroundColor = '';
+    if (btnFeedback) {
+        btnFeedback.addEventListener('click', () => {
+            const form = document.getElementById('form-feedback');
+            if (form) {
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
             }
         });
-
-        if (!resultadosEncontrados) {
-            alert('Nenhum resultado encontrado para: ' + termo);
-        }
     }
 
-    function limparPesquisa() {
-        document.getElementById('input-pesquisa').value = '';
-        
-        const todosElementos = elementosPesquisaveis.flatMap(seletor => 
-            Array.from(document.querySelectorAll(seletor))
-        );
-        
-        todosElementos.forEach(elemento => {
-            elemento.style.backgroundColor = '';
-            elemento.style.padding = '';
+    if (btnEnviar) {
+        btnEnviar.addEventListener('click', () => {
+            const textarea = document.querySelector('#form-feedback textarea');
+            if (!textarea) return;
+            
+            const feedback = textarea.value.trim();
+
+            if (feedback) {
+                alert('Obrigado pelo seu feedback! 🎧');
+                textarea.value = '';
+                document.getElementById('form-feedback').style.display = 'none';
+                console.log('Feedback recebido:', feedback);
+            }
         });
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(animarDigitacao, 500);
-    criarContadorFones();
-    criarSistemaAvaliacao();
-    criarSistemaPesquisa(); // Adicione esta linha
-    criarModalCurvas();
-    menuScroll();
-    criarParticulas();
-    criarSistemaFeedback();
-    console.log('🎵 Site de fones de ouvido carregado com sucesso!');
-});
+// 9. ADICIONAR CSS COMPLEMENTAR
+function adicionarCSS() {
+    // Verificar se o CSS já foi adicionado
+    if (document.getElementById('css-complementar')) return;
 
-// Código em CSS
-const cssComplementar = `
+    const cssComplementar = `
 .contador-fone {
     display: inline-block;
     background: linear-gradient(45deg, #ff007f, #4c00ff);
@@ -432,12 +475,14 @@ const cssComplementar = `
 .estrelas {
     font-size: 24px;
     cursor: pointer;
+    user-select: none;
 }
 
 .estrela {
     color: #666;
     transition: all 0.2s;
     margin: 0 2px;
+    display: inline-block;
 }
 
 .estrela.ativa,
@@ -452,104 +497,7 @@ const cssComplementar = `
     color: #ccc;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-}
-
-.modal-conteudo {
-    background: linear-gradient(135deg, #1a1e2b, #2d1b47);
-    margin: 10% auto;
-    padding: 20px;
-    border-radius: 15px;
-    width: 80%;
-    max-width: 500px;
-    border: 1px solid #ff007f;
-    position: relative;
-}
-
-.fechar-modal {
-    color: #fff;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.fechar-modal:hover {
-    color: #ff007f;
-}
-
-.loading {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #333;
-    border-top: 4px solid #ff007f;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 10px auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-#feedback-flutuante {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-#btn-feedback {
-    background: linear-gradient(45deg, #ff007f, #4c00ff);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-#form-feedback {
-    position: absolute;
-    bottom: 50px;
-    right: 0;
-    background: #1a1e2b;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ff007f;
-    width: 250px;
-}
-
-#form-feedback textarea {
-    width: 100%;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid #444;
-    border-radius: 5px;
-    color: white;
-    padding: 8px;
-    margin: 10px 0;
-    resize: vertical;
-}
-
-#enviar-feedback {
-    background: #ff007f;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-}
-    #barra-pesquisa {
+#barra-pesquisa {
     display: flex;
     gap: 10px;
     margin: 20px 0;
@@ -596,11 +544,139 @@ const cssComplementar = `
 #btn-pesquisa:hover, #btn-limpar:hover {
     transform: scale(1.05);
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+}
+
+.modal-conteudo {
+    background: linear-gradient(135deg, #1a1e2b, #2d1b47);
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 500px;
+    border: 1px solid #ff007f;
+    position: relative;
+}
+
+.fechar-modal {
+    color: #fff;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.fechar-modal:hover {
+    color: #ff007f;
+}
+
+.loading {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #333;
+    border-top: 4px solid #ff007f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes flutuar {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-20px) rotate(90deg); }
+    50% { transform: translateY(0) rotate(180deg); }
+    75% { transform: translateY(20px) rotate(270deg); }
+}
+
+#feedback-flutuante {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#btn-feedback {
+    background: linear-gradient(45deg, #ff007f, #4c00ff);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#form-feedback {
+    position: absolute;
+    bottom: 50px;
+    right: 0;
+    background: #1a1e2b;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #ff007f;
+    width: 250px;
+}
+
+#form-feedback textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: white;
+    padding: 8px;
+    margin: 10px 0;
+    resize: vertical;
+    font-family: inherit;
+}
+
+#enviar-feedback {
+    background: #ff007f;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.particula-musical {
+    pointer-events: none;
+}
 `;
 
-// Adicionar CSS complementar automaticamente
-const styleSheet = document.createElement('style');
-styleSheet.textContent = cssComplementar;
-document.head.appendChild(styleSheet);
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'css-complementar';
+    styleSheet.textContent = cssComplementar;
+    document.head.appendChild(styleSheet);
+}
 
-document.head.appendChild(styleSheet);
+// INICIALIZAR TODAS AS FUNCIONALIDADES
+document.addEventListener('DOMContentLoaded', function() {
+    // Primeiro adicionar o CSS
+    adicionarCSS();
+    
+    // Depois inicializar as funcionalidades
+    setTimeout(animarDigitacao, 500);
+    criarContadorFones();
+    criarSistemaAvaliacao();
+    criarSistemaPesquisa();
+    criarModalCurvas();
+    menuScroll();
+    criarParticulas();
+    criarSistemaFeedback();
+
+    console.log('🎵 Site de fones de ouvido carregado com sucesso!');
+});
